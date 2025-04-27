@@ -7,7 +7,7 @@ Collect and analyze metadata from a sample of English Wikipedia articles within 
 
 ### Goals
 
-This project aims to programmatically collect data on a diverse set of approximately 100 Wikipedia articles related to the broad "Science" category. Using a provided Python script (leveraging `requests` and `BeautifulSoup`), we will scrape key metadata points, including:
+This project aims to programmatically collect data on a diverse set of approximately 1000 Wikipedia articles related to the broad "Science" category. Using a provided Python script (leveraging `requests` and `BeautifulSoup`), we will scrape key metadata points, including:
 
 - **Article size**: Word Count, Section Count
 - **Sourcing**: Number of References
