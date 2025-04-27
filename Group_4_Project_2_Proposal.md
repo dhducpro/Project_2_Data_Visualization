@@ -52,9 +52,7 @@ These features offer quantitative insights into article size, sourcing, connecti
 
 ### Research Question
 
-> **How do quantitative characteristics (e.g., word count, reference count, link density, image count, and edit history) vary among Wikipedia science articles and their subcategories? Are there discernible patterns related to article scope or topic as reflected in their assigned categories?**
-
----
+How do quantitative characteristics (such as word count, reference count, link density, image count, and edit history indicators) vary among articles within the 'Science' category and its immediate subcategories on English Wikipedia, and are there discernible patterns related to article scope or topic revealed through their assigned categories?
 
 ## 3. Weekly Plan
 
@@ -70,9 +68,6 @@ To ensure balanced learning, fair contribution, and comprehensive skill developm
 | 4 | Report Writing (Methodology, Results) | Report Writing (Introduction, Discussion, Conclusion) |
 
 - **Member 1** and **Member 2** will both be responsible for regular peer review of each other's work during weekly check-ins.
-- In Week 4, both members will collaborate fully to synthesize all results into the final report and presentation.
-
----
 
 ### Week 1: Setup, Code Refinement, and Data Collection
 
