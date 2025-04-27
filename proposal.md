@@ -1,4 +1,4 @@
-*Project Proposal: Analyzing Structural Characteristics of Science Articles on Wikipedia
+*Project Proposal: Analyzing Structural Characteristics of Science Articles on Wikipedia*
 
 **1. High-Level Goal:**
 To collect and analyze metadata from a sample of English Wikipedia articles within the 'Science' category and its immediate subcategories to characterize their structure, scope, and engagement metrics.
