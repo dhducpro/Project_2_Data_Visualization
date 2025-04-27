@@ -30,7 +30,7 @@ We will use a Python scraping script to:
 
 - Start from the "Category:Science" on English Wikipedia
 - Retrieve articles directly within it and one level deeper into subcategories (Depth = 1)
-- Cap the total sample at **100 articles** (MAX_ROWS = 100)
+- Cap the total sample at **1000 articles** (MAX_ROWS = 100)
 
 The collected metadata fields are:
 
@@ -73,7 +73,7 @@ To ensure balanced learning, fair contribution, and comprehensive skill developm
 
 - Set up Python environment (install `requests`, `beautifulsoup4`, etc.)
 - Review and refine scraping script (error handling, delays, selectors)
-- Execute script to collect data (Depth = 1, Max = 100 articles)
+- Execute script to collect data (Depth = 1, Max = 1000 articles)
 - Validate collected dataset (`wikipedia_science_expanded.csv`)
 - Create and initialize GitHub repository (push initial code and dataset)
 
@@ -90,7 +90,7 @@ To ensure balanced learning, fair contribution, and comprehensive skill developm
 
 ### Week 3: Focused Analysis and Visualization
 
-- Group articles based on 'Categories' field (may require processing)
+- Group articles based on 'Categories' field
 - Compare article characteristics across groups (e.g., Word Count, Reference Density)
 - Use boxplots or similar visualizations
 - Identify and explore outliers
@@ -105,5 +105,3 @@ To ensure balanced learning, fair contribution, and comprehensive skill developm
 - Organize GitHub repository (code, cleaned dataset, notebooks, report)
 - Add a clear and comprehensive README file
 - Prepare for project submission or presentation
-
----
