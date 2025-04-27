@@ -14,7 +14,7 @@ To collect and analyze metadata from a sample of English Wikipedia articles with
 
 *(Assuming a 4-week timeline and a single team member, adjust as necessary)*
 
-*   **Week 1: Setup, Code Refinement & Data Collection **
+*   **Week 1: Setup, Code Refinement & Data Collection**
     *   Set up the Python environment with necessary libraries (`requests`, `beautifulsoup4`).
     *   Review and potentially refine the scraping script (e.g., enhance error handling, adjust delays, confirm CSS selectors are current).
     *   Execute the script to collect data for the "Science" category (Depth 1, Max 100 rows).
@@ -29,14 +29,14 @@ To collect and analyze metadata from a sample of English Wikipedia articles with
     *   Explore basic correlations between variables (e.g., Word Count vs. References, Links vs. Word Count).
     *   Commit analysis notebook and updated data (if cleaned) to GitHub.
 
-*   **Week 3: Focused Analysis & Visualization **
+*   **Week 3: Focused Analysis & Visualization**
     *   Attempt to group articles based on their 'Categories' field (this might require some text processing or manual categorization of the 100 articles based on their primary theme).
     *   Analyze the research question: Compare characteristics (e.g., average word count, reference density) across different identified groups/sub-categories. Use box plots or similar visualizations.
     *   Investigate potential outliers identified during EDA.
     *   Develop key visualizations that effectively communicate the main findings regarding the structure and characteristics of science articles in the sample.
     *   Refine analysis and visualizations based on initial findings. Commit progress to GitHub.
 
-*   **Week 4: Interpretation, Reporting & Finalization **
+*   **Week 4: Interpretation, Reporting & Finalization**
     *   Interpret the results of the analysis in the context of the research question and motivation. What do the patterns (or lack thereof) suggest about science articles on Wikipedia?
     *   Write a final report or presentation summarizing the project goals, methodology, findings, limitations, and potential future work.
     *   Ensure the GitHub repository is well-organized, contains the final code, dataset, analysis notebooks, and the final report/presentation. Add a comprehensive README file.
