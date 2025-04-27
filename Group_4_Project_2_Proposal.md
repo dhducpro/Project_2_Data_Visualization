@@ -5,37 +5,110 @@ Collect and analyze metadata from a sample of English Wikipedia articles within 
 
 ## 2. Goals, Motivation, and Research Question:
 
-*   **Goals:** This project aims to programmatically collect data on a diverse set of ~100 Wikipedia articles related to the broad category of "Science". Using the provided Python script leveraging `requests` and `BeautifulSoup`, we will scrape key metadata points including article size (Word Count, Section Count), sourcing (References), interconnectedness (Internal Links, External Links), visual elements (Image Count), timeliness (Last Edited Date), and historical depth (First Edit Year). The primary goal following data collection is to perform an exploratory data analysis (EDA) to identify typical characteristics and potential patterns within this sample of science-related articles.
-*   **Motivation & Interest:** Wikipedia serves as a primary source of scientific information for a vast global audience. Understanding the structural properties of these articles—how long they are, how well-sourced they appear, how they connect to other information, and how actively they are maintained—is crucial for gauging the nature of publicly accessible scientific knowledge. This project is interesting because it applies computational methods to quantify aspects of science communication and knowledge curation on this influential platform. It can potentially highlight differences in how various scientific topics are presented or identify articles that might warrant further qualitative review based on their metadata (e.g., high importance topic with few references).
-*   **Data Collection & Rationale:** The data will be collected using the provided Python script. It starts from the English Wikipedia "Category:Science", retrieves articles directly within it, and explores one level deeper into its subcategories (`DEPTH=1`), capping the total number of articles at `MAX_ROWS=100`. This approach provides a manageable yet diverse sample across different facets of science. The specific metadata fields (Title, Summary, Categories, References, Links, Last_Edited, Word_Count, Image_Count, Section_Count, External_Links, First_Edit_Year) are chosen because they offer quantitative insights into article size, depth, connectivity, visual richness, and editorial history.
-*   **Research Question:** How do quantitative characteristics (such as word count, reference count, link density, image count, and edit history indicators) vary among articles within the 'Science' category and its immediate subcategories on English Wikipedia, and are there discernible patterns related to article scope or topic revealed through their assigned categories?
+### Goals
 
-## 3. Weekly Plan:
+This project aims to programmatically collect data on a diverse set of approximately 100 Wikipedia articles related to the broad "Science" category. Using a provided Python script (leveraging `requests` and `BeautifulSoup`), we will scrape key metadata points, including:
 
-*   **Week 1: Setup, Code Refinement & Data Collection**
-    *   Set up the Python environment with necessary libraries (`requests`, `beautifulsoup4`).
-    *   Review and potentially refine the scraping script (e.g., enhance error handling, adjust delays, confirm CSS selectors are current).
-    *   Execute the script to collect data for the "Science" category (Depth 1, Max 100 rows).
-    *   Perform initial validation of the output CSV file (`wikipedia_science_expanded.csv`) to ensure data integrity.
-    *   Set up the GitHub repository. Push initial code and dataset.
+- **Article size**: Word Count, Section Count
+- **Sourcing**: Number of References
+- **Connectivity**: Internal Links, External Links
+- **Visual elements**: Image Count
+- **Timeliness**: Last Edited Date
+- **Historical depth**: First Edit Year
 
-*   **Week 2: Data Cleaning & Exploratory Data Analysis (EDA)**
-    *   Load the dataset into a data analysis environment (e.g., Pandas in a Jupyter Notebook).
-    *   Clean the data: Handle any missing values ('Unknown'), convert data types (e.g., counts to numeric, dates to datetime objects).
-    *   Calculate basic descriptive statistics for all quantitative features (mean, median, min, max, standard deviation).
-    *   Create initial visualizations: Histograms for distributions (Word Count, References, etc.), bar charts for categorical counts (if applicable from 'Categories' field after potential processing).
-    *   Explore basic correlations between variables (e.g., Word Count vs. References, Links vs. Word Count).
-    *   Commit analysis notebook and updated data (if cleaned) to GitHub.
+Following data collection, we will conduct an exploratory data analysis (EDA) to identify structural characteristics and emerging patterns within this sample.
 
-*   **Week 3: Focused Analysis & Visualization**
-    *   Attempt to group articles based on their 'Categories' field (this might require some text processing or manual categorization of the 100 articles based on their primary theme).
-    *   Analyze the research question: Compare characteristics (e.g., average word count, reference density) across different identified groups/sub-categories. Use box plots or similar visualizations.
-    *   Investigate potential outliers identified during EDA.
-    *   Develop key visualizations that effectively communicate the main findings regarding the structure and characteristics of science articles in the sample.
-    *   Refine analysis and visualizations based on initial findings. Commit progress to GitHub.
+### Motivation and Interest
 
-*   **Week 4: Interpretation, Reporting & Finalization**
-    *   Interpret the results of the analysis in the context of the research question and motivation. What do the patterns (or lack thereof) suggest about science articles on Wikipedia?
-    *   Write a final report or presentation summarizing the project goals, methodology, findings, limitations, and potential future work.
-    *   Ensure the GitHub repository is well-organized, contains the final code, dataset, analysis notebooks, and the final report/presentation. Add a comprehensive README file.
-    *   Prepare for project submission/presentation.
+Wikipedia serves as a primary source of scientific information for a global audience. Understanding the structural properties of science-related articles—such as length, sourcing, interconnectedness, and maintenance activity—is crucial for assessing the quality and accessibility of public scientific knowledge.
+
+This project is particularly interesting because it uses computational methods to quantify aspects of science communication on an influential platform. It may also highlight potential gaps, such as important topics lacking references, or reveal trends in article maintenance across scientific disciplines.
+
+### Data Collection & Rationale
+
+We will use a Python scraping script to:
+
+- Start from the "Category:Science" on English Wikipedia
+- Retrieve articles directly within it and one level deeper into subcategories (Depth = 1)
+- Cap the total sample at **100 articles** (MAX_ROWS = 100)
+
+The collected metadata fields are:
+
+| Field | Description |
+|:------|:------------|
+| Title | Article title |
+| Summary | Short description/summary |
+| Categories | List of assigned Wikipedia categories |
+| References | Count of references |
+| Internal Links | Number of internal links |
+| External Links | Number of external links |
+| Word Count | Total number of words |
+| Section Count | Number of sections in the article |
+| Image Count | Number of images |
+| Last Edited | Date of last edit |
+| First Edit Year | Year of first edit |
+
+These features offer quantitative insights into article size, sourcing, connectivity, visual richness, and editorial history.
+
+### Research Question
+
+> **How do quantitative characteristics (e.g., word count, reference count, link density, image count, and edit history) vary among Wikipedia science articles and their subcategories? Are there discernible patterns related to article scope or topic as reflected in their assigned categories?**
+
+---
+
+## 3. Weekly Plan
+
+### Group Member Roles and Rotation
+
+To ensure balanced learning, fair contribution, and comprehensive skill development, we propose rotating roles weekly as follows:
+
+| Week | Member 1 | Member 2 |
+|:----:|:--------:|:--------:|
+| 1 | Data Collection and Script Maintenance | GitHub Setup and Initial Validation |
+| 2 | Data Cleaning and Preprocessing | Exploratory Data Analysis (EDA) and Visualization |
+| 3 | Statistical Analysis and Visualization | Advanced Categorization and Focused Analysis |
+| 4 | Report Writing (Methodology, Results) | Report Writing (Introduction, Discussion, Conclusion) |
+
+- **Member 1** and **Member 2** will both be responsible for regular peer review of each other's work during weekly check-ins.
+- In Week 4, both members will collaborate fully to synthesize all results into the final report and presentation.
+
+---
+
+### Week 1: Setup, Code Refinement, and Data Collection
+
+- Set up Python environment (install `requests`, `beautifulsoup4`, etc.)
+- Review and refine scraping script (error handling, delays, selectors)
+- Execute script to collect data (Depth = 1, Max = 100 articles)
+- Validate collected dataset (`wikipedia_science_expanded.csv`)
+- Create and initialize GitHub repository (push initial code and dataset)
+
+### Week 2: Data Cleaning and Exploratory Data Analysis (EDA)
+
+- Load dataset (Pandas in Jupyter Notebook)
+- Clean data (handle missing values, convert data types)
+- Calculate basic descriptive statistics (mean, median, min, max, std dev)
+- Create initial visualizations:
+  - Histograms (e.g., Word Count, References)
+  - Bar charts (e.g., Top Categories)
+- Explore basic correlations (e.g., Word Count vs. References)
+- Push cleaned data and analysis notebook to GitHub
+
+### Week 3: Focused Analysis and Visualization
+
+- Group articles based on 'Categories' field (may require processing)
+- Compare article characteristics across groups (e.g., Word Count, Reference Density)
+- Use boxplots or similar visualizations
+- Identify and explore outliers
+- Develop main visualizations that summarize findings
+- Refine analysis based on results and feedback
+
+### Week 4: Interpretation, Reporting, and Finalization
+
+- Interpret findings relative to research questions and project goals
+- Discuss implications, limitations, and future directions
+- Write a final report or prepare a final presentation
+- Organize GitHub repository (code, cleaned dataset, notebooks, report)
+- Add a clear and comprehensive README file
+- Prepare for project submission or presentation
+
+---
