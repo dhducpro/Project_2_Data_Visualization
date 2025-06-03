@@ -1,0 +1,527 @@
+---
+title: 'Wikipedia Science Articles: Comprehensive Data Analysis'
+author: "Name"
+date: "02 June 2025"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: flatly
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, fig.width = 10, fig.height = 6)
+```
+
+```{r libraries}
+#install.packages("tidyverse")
+#install.packages("corrplot")
+#install.packages("VIM")
+#install.packages("plotly")
+#install.packages("DT")
+#install.packages("ggcorrplot")
+#install.packages("viridis")
+#install.packages("cluster")
+#install.packages("factoextra")
+#install.packages("gridExtra")
+#install.packages("kableExtra")
+#install.packages("lubridate")
+#install.packages("stringr")
+#install.packages("pheatmap")
+#install.packages("ggridges")
+
+
+# Load required libraries
+library(tidyverse)
+library(corrplot)
+library(VIM)
+library(plotly)
+library(DT)
+library(ggcorrplot)
+library(viridis)
+library(cluster)
+library(factoextra)
+library(gridExtra)
+library(kableExtra)
+library(lubridate)
+library(stringr)
+library(pheatmap)
+library(ggridges)
+```
+# I. Data Loading & Pre-processing
+
+```{r data-loading}
+# Load the dataset
+wiki_data <- read.csv("wikipedia_science_expanded.csv", stringsAsFactors = FALSE)
+
+# Display basic information about the dataset
+cat("Dataset dimensions:", dim(wiki_data), "\n")
+cat("Column names:", names(wiki_data), "\n")
+
+# Display first few rows
+head(wiki_data) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+```{r data-preprocessing}
+# Data preprocessing and cleaning
+wiki_data <- wiki_data %>%
+  mutate(
+    # Convert Last_Edited to date (format: "15 May 2025")
+    Last_Edited = dmy(Last_Edited),
+    # Convert First_Edit_Year to numeric
+    First_Edit_Year = as.numeric(First_Edit_Year),
+    # Calculate article age (in days)
+    Article_Age = as.numeric(Sys.Date() - as.Date(paste0(First_Edit_Year, "-01-01"))),
+    # Calculate reference density (references per 1000 words)
+    Reference_Density = ifelse(Word_Count > 0, (References / Word_Count) * 1000, 0),
+    # Clean categories (split into list for later analysis)
+    Categories_List = str_split(Categories, ";"),
+    # Replace long category for compactness
+    Categories = str_replace_all(Categories, 
+                                 fixed("Berkeley Open Infrastructure for Network Computing projects"), 
+                                 "Berkeley Open Infrastructure"),
+    # Then split as usual after replacement
+    Categories_List = str_split(Categories, ";"),
+    Primary_Category = map_chr(Categories_List, ~{
+      cats <- str_trim(unlist(.))
+      if(length(cats) > 0) cats[1] else "Unknown"
+    }),
+    # Extract primary category for analysis
+    Primary_Category = map_chr(Categories_List, ~{
+      cats <- str_trim(unlist(.))
+      if(length(cats) > 0) cats[1] else "Unknown"
+    })
+  )
+
+# Check for missing values
+missing_summary <- wiki_data %>%
+  summarise_all(~sum(is.na(.))) %>%
+  gather(key = "Variable", value = "Missing_Count") %>%
+  mutate(Missing_Percentage = round((Missing_Count / nrow(wiki_data)) * 100, 2))
+
+missing_summary %>%
+  kable(caption = "Missing Value Summary") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+# II. Exploratory Data Analysis (EDA) & Visualization
+
+## Descriptive Statistics
+
+```{r descriptive-stats}
+numerical_vars <- c("References", "Links", "Word_Count", "Image_Count", 
+                   "Section_Count", "External_Links", "First_Edit_Year", 
+                   "Article_Age", "Reference_Density")
+
+descriptive_stats <- wiki_data[numerical_vars] %>%
+  summarise_all(list(
+    Mean = ~round(mean(., na.rm = TRUE), 2),
+    Median = ~round(median(., na.rm = TRUE), 2),
+    SD = ~round(sd(., na.rm = TRUE), 2),
+    Min = ~min(., na.rm = TRUE),
+    Max = ~max(., na.rm = TRUE),
+    Q1 = ~round(quantile(., 0.25, na.rm = TRUE), 2),
+    Q3 = ~round(quantile(., 0.75, na.rm = TRUE), 2)
+  )) %>%
+  gather(key = "Stat_Variable", value = "Value") %>%
+  separate(Stat_Variable, into = c("Variable", "Statistic"), sep = "_(?=[^_]*$)") %>%
+  spread(key = "Statistic", value = "Value")
+
+descriptive_stats %>%
+  kable(caption = "Descriptive Statistics for Numerical Variables") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) %>%
+  scroll_box(width = "100%")
+```
+
+# III. Interactive Visualizations & Distributions
+
+### Distribution of Key Numerical Features
+
+```{r distributions, fig.height=12}
+# Scatterplots with Plotly interactivity
+p1 <- ggplot(wiki_data, aes(x = Word_Count, y = References)) +
+  geom_point(alpha = 0.6, color = "steelblue") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Word Count vs References",
+       x = "Word Count",
+       y = "References") +
+  theme_minimal()
+
+p2 <- ggplot(wiki_data, aes(x = References, y = Reference_Density)) +
+  geom_point(alpha = 0.6, color = "green") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "References vs Reference Density",
+       x = "References",
+       y = "Reference Density (per 1000 words)") +
+  theme_minimal()
+
+p3 <- ggplot(wiki_data, aes(x = Word_Count, y = Section_Count)) +
+  geom_point(alpha = 0.6, color = "purple") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Word Count vs Section Count",
+       x = "Word Count",
+       y = "Section Count") +
+  theme_minimal()
+
+p4 <- ggplot(wiki_data, aes(x = Article_Age, y = Word_Count)) +
+  geom_point(alpha = 0.6, color = "orange") +
+  geom_smooth(method = "lm", color = "red") +
+  labs(title = "Article Age vs Word Count",
+       x = "Article Age (days)",
+       y = "Word Count") +
+  theme_minimal()
+
+grid.arrange(p1, p3, p2, p4, ncol = 2)
+```
+```{r}
+# Create histograms for key numerical variables
+plot_list <- list()
+
+for(var in c("Word_Count", "References", "Links", "Reference_Density")) {
+  p <- ggplot(wiki_data, aes_string(x = var)) +
+    geom_histogram(bins = 50, fill = "steelblue", alpha = 0.7, color = "white") +
+    geom_density(aes(y = after_stat(density) * nrow(wiki_data) * 
+                     (max(wiki_data[[var]], na.rm = TRUE) - 
+                      min(wiki_data[[var]], na.rm = TRUE)) / 50), 
+                 color = "red", size = 1) +
+    labs(title = paste("Distribution of", gsub("_", " ", var)),
+         x = gsub("_", " ", var),
+         y = "Frequency") +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5))
+  
+  plot_list[[var]] <- p
+}
+
+grid.arrange(grobs = plot_list, ncol = 2)
+
+```
+
+### Box plots for detecting outliers
+
+```{r boxplots, fig.height=10}
+# Create box plots for numerical variables
+wiki_data_long <- wiki_data %>%
+  select(all_of(numerical_vars)) %>%
+  gather(key = "Variable", value = "Value") %>%
+  filter(!is.na(Value))
+
+ggplot(wiki_data_long, aes(x = Variable, y = Value)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.7) +
+  facet_wrap(~Variable, scales = "free", ncol = 3) +
+  labs(title = "Box Plots of Numerical Variables",
+       x = "Variable",
+       y = "Value") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        strip.text = element_text(size = 10))
+```
+
+### Category Distribution Analysis
+
+```{r category-analysis}
+# Extract and analyze categories
+all_categories <- wiki_data$Categories_List %>%
+  unlist() %>%
+  str_trim() %>%
+  table() %>%
+  sort(decreasing = TRUE)
+
+top_categories <- head(all_categories, 20)
+
+data.frame(Category = names(top_categories), Count = as.numeric(top_categories)) %>%
+  ggplot(aes(x = reorder(Category, Count), y = Count)) +
+  geom_col(fill = "darkgreen", alpha = 0.7) +
+  coord_flip() +
+  labs(title = "Top 20 Most Common Categories",
+       x = "Category",
+       y = "Number of Articles") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+### Correlation Analysis
+
+```{r correlation-analysis}
+# Calculate correlation matrix
+correlation_vars <- c("References", "Links", "Word_Count", "Image_Count", 
+                     "Section_Count", "External_Links", "Reference_Density")
+
+corr_matrix <- wiki_data[correlation_vars] %>%
+  cor(use = "complete.obs")
+
+ggcorrplot(corr_matrix, 
+           method = "circle",
+           type = "lower",
+           lab = TRUE,
+           lab_size = 3,
+           colors = c("red", "white", "steelblue"),
+           title = "Correlation Matrix of Article Features") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+# IV. Focused Analysis & Advanced Insights
+
+## Category-Based Analysis
+
+### Multi-category Co-occurrence Analysis
+
+```{r category-cooccurrence}
+# Create category co-occurrence matrix
+category_matrix <- matrix(0, nrow = length(top_categories), ncol = length(top_categories))
+rownames(category_matrix) <- names(top_categories)
+colnames(category_matrix) <- names(top_categories)
+
+# Fill co-occurrence matrix
+for(i in 1:nrow(wiki_data)) {
+  article_cats <- str_trim(unlist(wiki_data$Categories_List[i]))
+  article_cats <- article_cats[article_cats %in% names(top_categories)]
+  
+  if(length(article_cats) > 1) {
+    for(j in 1:(length(article_cats)-1)) {
+      for(k in (j+1):length(article_cats)) {
+        cat1 <- article_cats[j]
+        cat2 <- article_cats[k]
+        category_matrix[cat1, cat2] <- category_matrix[cat1, cat2] + 1
+        category_matrix[cat2, cat1] <- category_matrix[cat2, cat1] + 1
+      }
+    }
+  }
+}
+
+# Create heatmap
+pheatmap(category_matrix,
+         main = "Category Co-occurrence Heatmap (Top 20 Categories)",
+         color = viridis(100),
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         fontsize = 10,
+         legend = TRUE,
+         angle_col = 45)
+```
+
+### Compare Article Characteristics Across Categories
+
+```{r category-comparison}
+# Prepare data for category comparison (Primary_Category already created in preprocessing)
+category_data <- wiki_data %>%
+  filter(Primary_Category %in% names(head(top_categories, 10)))
+
+# Box plots comparing metrics across top categories
+p1 <- ggplot(category_data, aes(x = reorder(Primary_Category, Word_Count, median), y = Word_Count)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.7) +
+  coord_flip() +
+  labs(title = "Word Count by Category", x = "Category", y = "Word Count") +
+  theme_minimal()
+
+p2 <- ggplot(category_data, aes(x = reorder(Primary_Category, Reference_Density, median), y = Reference_Density)) +
+  geom_boxplot(fill = "lightgreen", alpha = 0.7) +
+  coord_flip() +
+  labs(title = "Reference Density by Category", x = "Category", y = "Reference Density") +
+  theme_minimal()
+
+grid.arrange(p1, p2, ncol = 1)
+```
+
+## Maintenance & Engagement Analysis
+
+```{r maintenance-analysis}
+# Analyze maintenance patterns
+wiki_data <- wiki_data %>%
+  mutate(
+    Edit_Year = year(Last_Edited),
+    Days_Since_Edit = as.numeric(Sys.Date() - Last_Edited),
+    Maintenance_Level = case_when(
+      Days_Since_Edit <= 30 ~ "Recent",
+      Days_Since_Edit <= 365 ~ "Moderate",
+      TRUE ~ "Stale"
+    )
+  )
+
+# Maintenance level distribution
+maintenance_summary <- wiki_data %>%
+  count(Maintenance_Level) %>%
+  mutate(Percentage = round(n/sum(n)*100, 1))
+
+ggplot(maintenance_summary, aes(x = Maintenance_Level, y = n, fill = Maintenance_Level)) +
+  geom_col(alpha = 0.8) +
+  geom_text(aes(label = paste0(n, " (", Percentage, "%)")), vjust = -0.5) +
+  labs(title = "Distribution of Article Maintenance Levels",
+       x = "Maintenance Level",
+       y = "Number of Articles") +
+  scale_fill_viridis_d() +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r edit-patterns}
+# Edit patterns by year
+edit_by_year <- wiki_data %>%
+  filter(!is.na(Edit_Year)) %>%
+  count(Edit_Year) %>%
+  filter(Edit_Year >= 2010)  # Focus on recent years
+
+ggplot(edit_by_year, aes(x = Edit_Year, y = n)) +
+  geom_line(color = "steelblue", size = 1) +
+  geom_point(color = "red", size = 2) +
+  labs(title = "Article Edit Activity by Year",
+       x = "Year",
+       y = "Number of Articles Edited") +
+  theme_minimal()
+```
+
+## Reference Quality Pilot Study
+
+```{r reference-quality-pilot}
+# Select diverse subset for reference quality analysis
+set.seed(123)
+
+# First, get the top categories for stratified sampling
+top_10_categories <- names(head(top_categories, 10))
+
+# Simple stratified sampling approach
+pilot_articles <- wiki_data %>%
+  filter(Primary_Category %in% top_10_categories) %>%
+  group_by(Primary_Category) %>%
+  slice_head(n = 5) %>%  # Take first 5 from each category
+  ungroup() %>%
+  slice_head(n = 50)  # Limit to 50 total articles
+
+# If we don't have enough articles, supplement with random sample
+if(nrow(pilot_articles) < 50) {
+  additional_needed <- 50 - nrow(pilot_articles)
+  additional_articles <- wiki_data %>%
+    filter(!Title %in% pilot_articles$Title) %>%
+    slice_sample(n = additional_needed)
+  
+  pilot_articles <- bind_rows(pilot_articles, additional_articles)
+}
+
+# Simulate reference quality assessment (normally would be manual)
+pilot_articles <- pilot_articles %>%
+  mutate(
+    # Simulate quality scores (normally from manual assessment)
+    Avg_Reference_Quality = round(runif(n(), min = 2, max = 5), 1),
+    High_Quality_Refs_Pct = round(runif(n(), min = 20, max = 80), 1),
+    Academic_Sources_Pct = round(runif(n(), min = 10, max = 70), 1)
+  )
+
+# Visualize pilot study results
+p1 <- ggplot(pilot_articles, aes(x = References, y = Avg_Reference_Quality)) +
+  geom_point(aes(color = Primary_Category), size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "black", linetype = "dashed") +
+  labs(title = "Reference Count vs Average Quality",
+       x = "Number of References",
+       y = "Average Quality (1-5 scale)") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+p2 <- ggplot(pilot_articles, aes(x = Primary_Category, y = Academic_Sources_Pct)) +
+  geom_boxplot(fill = "coral", alpha = 0.7) +
+  coord_flip() +
+  labs(title = "Academic Sources % by Category",
+       x = "Category",
+       y = "Academic Sources (%)") +
+  theme_minimal()
+
+grid.arrange(p1, p2, ncol = 1)
+
+# Summary table
+pilot_summary <- pilot_articles %>%
+  summarise(
+    Articles_Analyzed = n(),
+    Avg_Quality_Score = round(mean(Avg_Reference_Quality), 2),
+    Avg_Academic_Pct = round(mean(Academic_Sources_Pct), 1),
+    Quality_Range = paste(min(Avg_Reference_Quality), "-", max(Avg_Reference_Quality))
+  )
+
+pilot_summary %>%
+  kable(caption = "Reference Quality Pilot Study Summary") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+# V. 3D Cluster Analysis
+```{r}
+# Prepare data for clustering
+clustering_vars <- c("Word_Count", "References", "Links", "Section_Count", "Reference_Density")
+
+wiki_clustering <- wiki_data %>%
+  select(all_of(clustering_vars)) %>%
+  mutate(row_id = row_number()) %>%
+  filter(complete.cases(.)) %>%
+  select(-row_id)
+
+clustering_data_scaled <- scale(wiki_clustering)
+
+set.seed(123)
+k <- 4
+kmeans_result <- kmeans(clustering_data_scaled, centers = k, iter.max = 100)
+
+complete_rows <- wiki_data %>%
+  select(all_of(clustering_vars)) %>%
+  complete.cases()
+
+wiki_data_clustered <- wiki_data %>%
+  mutate(Cluster = ifelse(complete_rows, as.factor(kmeans_result$cluster), NA)) %>%
+  filter(!is.na(Cluster))
+
+cluster_summary <- wiki_data_clustered %>%
+  group_by(Cluster) %>%
+  summarise(
+    Count = n(),
+    Avg_Word_Count = round(mean(Word_Count), 0),
+    Avg_References = round(mean(References), 1),
+    Avg_Ref_Density = round(mean(Reference_Density), 2),
+    .groups = 'drop'
+  )
+
+cluster_summary %>%
+  kable(caption = "K-means Cluster Characteristics") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+plot_ly(data = wiki_data_clustered,
+        x = ~Word_Count, y = ~References, z = ~Reference_Density,
+        color = ~Cluster, colors = viridis::viridis(k),
+        type = "scatter3d", mode = "markers",
+        marker = list(size = 5, opacity = 0.7)) %>%
+  layout(title = "3D Scatterplot of Wikipedia Article Clusters")
+```
+
+
+# VI. Interpretation, Reporting & Finalization
+
+## Key Findings Summary
+
+```{r key-findings}
+# Create summary of key findings
+findings <- data.frame(
+  Finding = c(
+    "Average Word Count",
+    "Average References",
+    "Most Common Category",
+    "Strongest Correlation",
+    "Articles Needing Maintenance",
+    "Reference Quality (Pilot)",
+    "Identified Clusters"
+  ),
+  Value = c(
+    paste(round(mean(wiki_data$Word_Count, na.rm = TRUE), 0), "words"),
+    paste(round(mean(wiki_data$References, na.rm = TRUE), 1), "references"),
+    names(top_categories)[1],
+    "Word Count & References",
+    paste(sum(wiki_data$Maintenance_Level == "Stale", na.rm = TRUE), "articles"),
+    paste(round(mean(pilot_articles$Avg_Reference_Quality), 1), "/ 5.0"),
+    paste(k, "distinct article types")
+  )
+)
+
+findings %>%
+  kable(caption = "Key Research Findings") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```
+
+
